@@ -29,28 +29,36 @@ function initializeNavigation() {
 }
 
 function showPage(pageId) {
-    // Hide all pages
+    // Hide all pages with animation
     document.querySelectorAll('.page-section').forEach(section => {
+        section.classList.remove('active');
         section.classList.add('hidden');
     });
 
-    // Show target page
+    // Show target page with animation
     const targetSection = document.getElementById(pageId);
     if (targetSection) {
         targetSection.classList.remove('hidden');
+        // Trigger animation after a small delay
+        setTimeout(() => {
+            targetSection.classList.add('active');
+        }, 50);
     }
 
-    // Update active navigation
+    // Update active navigation with enhanced styling
     document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('text-purple-600');
+        link.classList.remove('active', 'text-purple-600');
         link.classList.add('text-gray-700');
     });
 
     const activeLink = document.querySelector(`[href="#${pageId}"]`);
     if (activeLink) {
         activeLink.classList.remove('text-gray-700');
-        activeLink.classList.add('text-purple-600');
+        activeLink.classList.add('text-purple-600', 'active');
     }
+
+    // Smooth scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Load page-specific data
     switch(pageId) {
@@ -110,32 +118,46 @@ function displayTrendingPosts(posts) {
     const container = document.getElementById('trending-posts');
     
     if (!posts || posts.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-center">No trending posts available</p>';
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No trending posts available</p>';
         return;
     }
 
-    const postsHTML = posts.map(post => `
-        <div class="border-l-4 border-purple-500 pl-4 py-2">
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <h4 class="font-semibold text-gray-800 mb-1">
-                        <a href="${post.url}" target="_blank" class="hover:text-purple-600">
+    const postsHTML = posts.slice(0, 5).map((post, index) => {
+        const sentimentClass = getSentimentClass(post.sentiment.combined);
+        const sentimentLabel = getSentimentLabel(post.sentiment.combined);
+        
+        return `
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border-l-4 ${sentimentClass} card-hover mb-4" style="animation-delay: ${index * 0.1}s;">
+                <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-bold text-gray-800 line-clamp-2 text-lg flex-1">
+                        <a href="${post.url}" target="_blank" class="hover:text-purple-600 transition-colors">
                             ${post.title}
                         </a>
                     </h4>
-                    <p class="text-sm text-gray-600 mb-2">${post.content.substring(0, 100)}...</p>
-                    <div class="flex items-center space-x-4 text-xs text-gray-500">
-                        <span><i class="fas fa-arrow-up mr-1"></i>${post.score}</span>
-                        <span><i class="fas fa-comments mr-1"></i>${post.num_comments}</span>
-                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded">r/${post.subreddit}</span>
-                        <span class="sentiment-badge ${getSentimentClass(post.sentiment.combined)}">
-                            ${getSentimentLabel(post.sentiment.combined)}
+                    <span class="text-xs px-3 py-1 rounded-full ${sentimentClass} text-white ml-3 font-medium shadow-sm">
+                        ${sentimentLabel}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">${post.content.substring(0, 150)}...</p>
+                <div class="flex justify-between items-center text-xs text-gray-500">
+                    <span class="flex items-center">
+                        <i class="fas fa-reddit mr-1"></i>
+                        r/${post.subreddit}
+                    </span>
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center">
+                            <i class="fas fa-arrow-up mr-1"></i>
+                            ${post.score}
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-comments mr-1"></i>
+                            ${post.num_comments}
                         </span>
                     </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     container.innerHTML = postsHTML;
 }
@@ -356,34 +378,44 @@ function displayCourses(courses) {
     const container = document.getElementById('courses-grid');
     
     if (!courses || courses.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-center col-span-full">No courses available</p>';
+        container.innerHTML = '<p class="text-gray-500 text-center col-span-full py-12">No courses available</p>';
         return;
     }
 
-    const coursesHTML = courses.map(course => `
-        <div class="bg-white rounded-lg shadow-md overflow-hidden card-hover">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">${course.title}</h3>
-                    <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">${course.category}</span>
+    const coursesHTML = courses.map((course, index) => `
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover" style="animation-delay: ${index * 0.1}s;">
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800 line-clamp-2">${course.title}</h3>
+                    <span class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">${course.category}</span>
                 </div>
-                <div class="space-y-2 mb-4">
+                <div class="space-y-3 mb-6">
                     <div class="flex items-center text-sm text-gray-600">
-                        <i class="fas fa-star text-yellow-400 mr-1"></i>
-                        <span>${course.rating}/5.0</span>
+                        <div class="flex items-center mr-4">
+                            <i class="fas fa-star text-yellow-400 mr-2"></i>
+                            <span class="font-semibold">${course.rating}/5.0</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-users mr-2"></i>
+                            <span>${course.students.toLocaleString()} students</span>
+                        </div>
                     </div>
                     <div class="flex items-center text-sm text-gray-600">
-                        <i class="fas fa-users mr-1"></i>
-                        <span>${course.students.toLocaleString()} students</span>
+                        <i class="fas fa-tag mr-2"></i>
+                        <span class="font-semibold text-green-600">${course.price}</span>
                     </div>
                     <div class="flex items-center text-sm text-gray-600">
-                        <i class="fas fa-tag mr-1"></i>
-                        <span>${course.price}</span>
+                        <i class="fas fa-globe mr-2"></i>
+                        <span>${course.platform}</span>
                     </div>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-500">${course.platform}</span>
-                    <a href="${course.url}" target="_blank" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition duration-300">
+                <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <span class="text-sm text-gray-500 flex items-center">
+                        <i class="fas fa-external-link-alt mr-1"></i>
+                        ${course.platform}
+                    </span>
+                    <a href="${course.url}" target="_blank" class="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <i class="fas fa-external-link-alt mr-2"></i>
                         View Course
                     </a>
                 </div>
