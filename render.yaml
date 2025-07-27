@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: edupulse
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: REDDIT_CLIENT_ID
+        sync: false
+      - key: REDDIT_CLIENT_SECRET
+        sync: false
+      - key: REDDIT_USER_AGENT
+        value: EduPulse/1.0
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false 

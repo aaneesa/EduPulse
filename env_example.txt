@@ -1,0 +1,9 @@
+# Reddit API Credentials
+# Get these from https://www.reddit.com/prefs/apps
+REDDIT_CLIENT_ID=NDHAjphozf21Eiii98KY4A
+REDDIT_CLIENT_SECRET=ScQmxWt9Ke1DaLHScRAj5oRWn9U39g
+REDDIT_USER_AGENT=EduPulse/1.0
+
+# Flask Configuration
+FLASK_ENV=development
+FLASK_DEBUG=True 
